@@ -1,86 +1,89 @@
 package Class
 
-data class Disc(var num: Double, var str: String) {
+val allowedRazm = listOf("г", "кг", "ц", "т", "мм", "см", "дм", "м", "км", "с", "мин", "ч", "день", "мес", "год")
 
-    operator fun plus(other: Disc) = this.num + other.num
-    operator fun minus(other: Disc) = this.num - other.num
-    operator fun times(other: Disc) = this.num * other.num
-    operator fun div(other: Disc) = this.num / other.num
-
-    fun equalsParam(other: Disc, recieve: String): Boolean {
-        if (recieve.matches(Regex("""\s*\d+[.]?\d*\s+[а-яА-ЯёЁ]+(\s+[-+*~=]\s+\d+[.]?\d*\s+[а-яА-ЯёЁ]+)+\s*"""))) {
-            Regex("""\s+""").replace(recieve, " ").trim()
-            val parsLine = recieve.split(" ").toMutableList()
-            if ("" in parsLine) parsLine.remove("")
-            val razm = mutableListOf<String>()
-            val tip = mutableListOf("1")
-            for (i in 1 until parsLine.size step 3)
-                razm.add(parsLine[i])
-            for (i in 1 until razm.size)
-                if (razm[i] == razm[i - 1])
-                    tip.add("1")
-            val listOfWeight = listOf("г", "кг", "ц", "т")
-            val listOfDistance = listOf("мм", "см", "дм", "м", "км")
-            val listOfTime = listOf("с", "мин", "ч", "день", "мес", "год")
-            if (razm.size != tip.size)
-                return false
-            if (razm[0] !in listOfDistance && razm[0] !in listOfTime && razm[0] !in listOfWeight)
-                return false
-        }
-        return true
-    }
+fun Disc(str: String): Disc {
+    val list = str.split(" ")
+    if (list.size != 2) throw IllegalArgumentException()
+    val num = list.first()
+    val razm = list.last()
+    if (razm !in allowedRazm) throw IllegalArgumentException()
+    else return Disc(num.toDouble(), razm)
 }
-fun mainOperations(recieve: String): Any {
-    val one = Disc(0.0, "")
-    var other = Disc(0.0, "")
-    if (recieve.matches(Regex("""\s*\d+[.]?\d*\s+[а-яА-ЯёЁ]+(\s+[-+*~=]\s+\d+[.]?\d*\s+[а-яА-ЯёЁ]+)+\s*"""))) {
-        Regex("""\s+""").replace(recieve, " ").trim()
-        val parsLine = recieve.split(" ").toMutableList()
-        if ("" in parsLine) parsLine.remove("")
-        one.num = parsLine[0].toDouble()
-        one.str = parsLine[1]
-        var numRez = 0.0
-        for (i in 4 until parsLine.size step 3) {
-            other.num = parsLine[i - 1].toDouble()
-            other.str = parsLine[i]
-            if (one.equalsParam(other, " 5 г + 5 г + 5 г + 5 г"))
 
-            when (parsLine[2]) {
-                "+" -> one.num = one.num.plus(parsLine[3].toDouble())
-                "-" -> one.num = one.num.minus(parsLine[3].toDouble())
-                "*" -> one.num = one.num.times(parsLine[3].toDouble())
-                "~" -> one.num = one.num.div(parsLine[3].toDouble())
-                "=" -> return one.num == parsLine[3].toDouble()
+class Disc(val num: Double, val str: String) {
+
+    operator fun plus(other: Disc): Disc {
+        if (!checkDisc() || str != other.str) throw IllegalArgumentException()
+        else return Disc(num + other.num, str)
+    }
+
+    operator fun minus(other: Disc): Disc {
+        if (!checkDisc() || str != other.str) throw IllegalArgumentException()
+        else return Disc(num - other.num, str)
+    }
+
+    operator fun times(other: Disc): Disc {
+        if (!checkDisc() || str != other.str) throw IllegalArgumentException()
+        else return Disc(num * other.num, str)
+    }
+
+    operator fun times(other: Double): Disc = Disc(num * other, str)
+
+    operator fun div(other: Disc): Disc {
+        if (!checkDisc() || str != other.str) throw IllegalArgumentException()
+        else return Disc(num / other.num, str)
+    }
+
+    operator fun div(other: Double): Disc = Disc(num / other, str)
+
+    fun checkDisc(): Boolean {
+        return str in allowedRazm
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return if (other !is Disc) false
+        else num == other.num && str == other.str
+    }
+
+    override fun toString(): String = "$num $str"
+}
+
+fun mainOperations(recieve: String) {
+    val d1 = Disc("12 кг")
+    val d2 = Disc("15 кг")
+    println(d1 + d2)
+    return
+    /*val one = Disc(0.0, "")
+    var other = Disc(0.0, "")
+    if (!recieve.matches(Regex("""\s*\d+[.]?\d*\s+[а-яА-ЯёЁ]+(\s+[-+*~=]\s+\d+[.]?\d*\s+[а-яА-ЯёЁ]+)+\s*""")))
+        return
+    val parsLine = recieve.split("\\s+").toMutableList()
+    val size = parsLine.size
+    val nums = parsLine.filterIndexed { index, _ -> index % 3 == 0 }
+    val sizes = parsLine.filterIndexed { index, _ -> index % 3 == 1 }
+    val operations = parsLine.filterIndexed { index, _ -> index % 3 == 2 }
+    if (sizes.toSet().size != 1) return
+    try {
+        val discs = nums.mapIndexed { index, s -> Disc(s.toDouble(), sizes[index]) }.toMutableList()
+        var res = discs.first()
+        discs.removeAt(0)
+        for (i in 0 until discs.size) {
+            val op = operations[i]
+            when (op) {
+                "+" -> res += discs[i]
+                "-" -> res -= discs[i]
+                "*" -> res *= discs[i]
+                "/" -> res /= discs[i]
             }
         }
-        /*    if (condition == "+" && one.str == another.str)
-            numRez = one.addition(another)
-        if (condition == "-" && one.str == another.str)
-            numRez = one.subtraction(another)
-        if (condition == "/")
-            numRez = one.division(another)
-        if (condition == "*")
-            numRez = one.multiplication(another)
-        if (condition == "~" && one.str == another.str)
-            numRez = one.divisionWithDisc(another)
-        if (condition == "=" && one.str == another.str) {
-            bool = one.comparison(another)
-            return bool
-        }
-        */
-        /*val subRez: String
-        if ('.' in numRez) {
-            subRez = numRez.substring(0, numRez.indexOf('.', 0) + 4)
-            return "$subRez ${one.str}"
-        }*/
-        numRez = ((one.num * 1000).toInt().toDouble() / 1000)
-        return "$numRez ${one.str}"
-    } else throw IllegalArgumentException("Неверный формат ввода")
+    } catch (e: Exception) {
+        println("Incorrect aruments")
+    }*/
 }
-
 
 
 fun main(args: Array<String>) {
-    println("Hello, World")
+    mainOperations("")
 }
 

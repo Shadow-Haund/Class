@@ -4,14 +4,48 @@ import org.junit.Test
 import kotlin.test.assertEquals
 
 class Test {
-    @Test
-    fun testForMainOperations(){
-        assertEquals("20.0 г", mainOperations(" 5 г + 5 г + 5 г + 5 г"))
-        assertEquals("14539.718 кг", mainOperations(" 231.2458 кг * 62.8756 кг"))
-        assertEquals("7.0 г", mainOperations("70 г - 63 г"))
-        assertEquals("28.0 кг", mainOperations("7 кг * 4 кг"))
-        assertEquals("7.0 кг", mainOperations("35 кг ~ 5 кг"))
-        assertEquals(false, mainOperations("7 кг = 4 кг"))
-        assertEquals(true, mainOperations("4 кг = 4 кг"))
+
+    fun testArOper(d1: Disc, d2: Disc, other: Double, op: String, expected: Disc) {
+        when (op) {
+            "+" -> assertEquals(expected, d1 + d2)
+            "-" -> assertEquals(expected, d1 - d2)
+            "*" -> assertEquals(expected, d1 * d2)
+            "/" -> assertEquals(expected, d1 / d2)
+            "|" -> assertEquals(expected, d1 * other)
+            "_" -> assertEquals(expected, d1 / other)
+        }
     }
+
+    @Test
+    fun testPlus(){
+        testArOper(Disc(1.0, "кг"), Disc(2.0, "кг"),0.0, "+", Disc(3.0, "кг"))
+    }
+    @Test
+    fun testMinus(){
+        testArOper(Disc(15.0, "кг"), Disc(2.0, "кг"),0.0, "-", Disc(13.0, "кг"))
+    }
+    @Test
+    fun testTimes(){
+        testArOper(Disc(5.0, "кг"), Disc(2.0, "кг"),0.0, "*", Disc(10.0, "кг"))
+    }
+    @Test
+    fun testDiv(){
+        testArOper(Disc(10.0, "кг"), Disc(2.0, "кг"),0.0, "/", Disc(5.0, "кг"))
+    }
+    @Test
+    fun testTimesNum(){
+        testArOper(Disc(3.0, "кг"), Disc(0.0, ""), 15.0, "|", Disc(45.0, "кг"))
+    }
+    @Test
+    fun testDivNum(){
+        testArOper(Disc(8.0, "кг"), Disc(0.0, ""), 2.0, "_", Disc(4.0, "кг"))
+    }
+    @Test
+    fun testEquals(){
+        val d1 = Disc(5.0, "кг")
+        val d2 = Disc(5.0, "кг")
+        val d3 = Disc(10.0, "кг")
+        assertEquals(d3, d1 + d2)
+    }
+
 }
